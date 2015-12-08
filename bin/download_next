@@ -77,7 +77,7 @@ try {
     $exit_code = 1;
   } else {
     rename($pbf_dir.'/'.$place.'-latest.osm.pbf', $pbf_dir.'/'.$place.'.osm.pbf');
-    syslog(LOG_NOTICE, "Downloaded $url to $pbf_dir.'/'.$place.'.osm.pbf");
+    syslog(LOG_NOTICE, "Downloaded $url to $pbf_dir/$place.osm.pbf");
   }
 } catch (Exception $e) {
   syslog(LOG_ERROR, "Exception:".$e->getMessage());
