@@ -1,0 +1,70 @@
+#!/usr/bin/env php
+<?php
+
+// open syslog, include the process ID and also send
+// the log to standard error, and use a user defined
+// logging mechanism
+openlog("CurvatureBuilder", LOG_PID, LOG_USER);
+$exit_code = 0;
+try {
+
+  include dirname(__FILE__)."/../config.php";
+
+  if (empty($places)) {
+    throw new Exception("\$places must be defined.");
+  }
+
+  $position_file = dirname(__FILE__)."/../data/last_downloaded";
+  $last_index = FALSE;
+  if (file_exists($position_file)) {
+    $last_downloaded = trim(file_get_contents($position_file));
+    $last_index = array_search($last_downloaded, $places);
+  }
+  if ($last_index !== FALSE) {
+    $next_index = $last_index + 1;
+  } else {
+    $next_index = 0;
+  }
+  if (!$next_index || $next_index >= count($places)) {
+    $next_index = 0;
+  }
+
+  $place = $places[$next_index];
+  file_put_contents($position_file, $place);
+
+  if (empty($pbf_dir)) {
+    throw new Exception("\$pbf_dir must be defined.");
+  }
+  if (!file_exists($pbf_dir)) {
+    mkdir($pbf_dir, 0775, true);
+  }
+
+  $url = "http://download.geofabrik.de/${place}-latest.osm.pbf";
+
+  $place_dir = dirname($place);
+  $place_file = basename($place);
+  if (!file_exists($pbf_dir.'/'.$place_dir)) {
+    mkdir($pbf_dir.'/'.$place_dir, 0775, true);
+  }
+
+  // Download the file
+  if (file_exists($pbf_dir.'/'.$place.'-latest.osm.pbf')) {
+    unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
+  }
+  exec('wget -q -P '.escapeshellarg($pbf_dir.'/'.$place_dir).' '.escapeshellarg($url), $output, $ret);
+  if ($ret > 0) {
+    print implode("\n", $output);
+    unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
+    syslog(LOG_WARNING, "Failed downloading $url to $pbf_dir.'/'.$place_dir");
+    $exit_code = 1;
+  } else {
+    rename($pbf_dir.'/'.$place.'-latest.osm.pbf', $pbf_dir.'/'.$place.'.osm.pbf');
+    syslog(LOG_NOTICE, "Downloaded $url to $pbf_dir.'/'.$place.'.osm.pbf");
+  }
+} catch (Exception $e) {
+  syslog(LOG_ERROR, "Exception:".$e->getMessage());
+  $exit_code = $e->getCode();
+}
+
+closelog();
+exit($exit_code);

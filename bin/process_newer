@@ -1,0 +1,121 @@
+#!/usr/bin/env php
+<?php
+
+// open syslog, include the process ID and also send
+// the log to standard error, and use a user defined
+// logging mechanism
+openlog("CurvatureBuilder", LOG_PID, LOG_USER);
+
+try {
+
+  include dirname(__FILE__)."/../config.php";
+
+  if (empty($places)) {
+    throw new Exception("\$places must be defined.");
+  }
+  if (empty($pbf_dir)) {
+    throw new Exception("\$pbf_dir must be defined.");
+  }
+  if (!file_exists($pbf_dir)) {
+    mkdir($pbf_dir, 0775, true);
+  }
+  if (empty($kml_dir)) {
+    throw new Exception("\$kml_dir must be defined.");
+  }
+  if (!file_exists($kml_dir)) {
+    mkdir($kml_dir, 0775, true);
+  }
+
+  if (empty($curvature_path)) {
+    throw new Exception("\$curvature_path must be defined.");
+  }
+  if (!file_exists($curvature_path.'/curvature.py')) {
+    throw new Exception("curvature.py doesn't exist at $curvature_path");
+  }
+  $exit_code = 0;
+  foreach($places as $place) {
+    $has_surfaces = false;
+    $km = '--km';
+    foreach($miles_places as $miles_place) {
+      if (preg_match('#^'.$miles_place.'#', $place)) {
+        $km = '';
+      }
+    }
+    $pbf_file = $pbf_dir.'/'.$place.'.osm.pbf';
+    if (file_exists($pbf_file)) {
+      $pbf_tstamp = filemtime($pbf_file);
+      $place_kml_dir = $kml_dir.'/'.dirname($place);
+      $place_kml_basename = basename($place);
+      $kml_tstamp = 0;
+      if (file_exists($place_kml_dir)) {
+        foreach (scandir($place_kml_dir) as $file) {
+          if (preg_match('/^'.$place_kml_basename.'\.c_.+/', $file)) {
+            $kml_tstamp = max($kml_tstamp, filemtime($place_kml_dir.'/'.$file));
+          } else if (preg_match('/^'.$place_kml_basename.'\.surfaces\..+/', $file)) {
+            $has_surfaces = true;
+          }
+        }
+      }
+
+      if ($pbf_tstamp > $kml_tstamp) {
+        if (!file_exists($place_kml_dir)) {
+          mkdir($place_kml_dir, 0775, true);
+        }
+
+        exec($curvature_path.'/curvature.py '.$km.' --add_kml min_curvature=1000 --add_kml min_curvature=1000,colorize=1 --output_path '.escapeshellarg($place_kml_dir).' '.escapeshellarg($pbf_file).' 2>&1', $output, $ret);
+
+        if ($ret > 0) {
+          syslog(LOG_WARNING, "Error processing curvature for $place:\n".implode("\n", $output));
+          print "Errors processing curvature for $place:\n";
+          print implode("\n", $output)."\n\n";
+          $exit_code = 1;
+        } else {
+          syslog(LOG_NOTICE, "Processed curvature for $place");
+        }
+
+        if ($has_surfaces) {
+          exec($curvature_path.'/surface.py --output_path '.escapeshellarg($place_kml_dir).' '.escapeshellarg($pbf_file).' 2>&1', $output, $ret);
+
+          if ($ret > 0) {
+            syslog(LOG_WARNING, "Error processing surfaces for $place:\n".implode("\n", $output));
+            print "Errors processing surfaces for $place:\n";
+            print implode("\n", $output)."\n\n";
+            $exit_code = 2;
+          } else {
+            syslog(LOG_NOTICE, "Processed surfaces for $place");
+          }
+        }
+      }
+    }
+  }
+
+  if (empty($curvature_site_tools_path)) {
+    throw new Exception("\$curvature_site_tools_path must be defined.");
+  }
+  if (!file_exists($curvature_site_tools_path.'/create_indices')) {
+    throw new Exception("create_indices doesn't exist at $curvature_site_tools_path");
+  }
+  exec($curvature_site_tools_path.'/create_indices', $output, $ret);
+  if ($ret > 0) {
+    syslog(LOG_WARNING, "Error creating indices:\n".implode("\n", $output));
+    print implode("\n", $output)."\n\n";
+    $exit_code = 3;
+  } else {
+    syslog(LOG_NOTICE, "Created indices");
+  }
+
+  exec('rsync -a --exclude=".*" '.$kml_dir.' www.adamfranco.com:/var/www/www2.adamfranco.com/curvature/kml/', $output, $ret);
+  if ($ret > 0) {
+    syslog(LOG_WARNING, "Error rsyncing files:\n".implode("\n", $output));
+    print implode("\n", $output)."\n\n";
+    $exit_code = 4;
+  } else {
+    syslog(LOG_NOTICE, "Rsync curvature files");
+  }
+} catch (Exception $e) {
+  syslog(LOG_ERROR, "Exception:".$e->getMessage());
+  $exit_code = $e->getCode();
+}
+
+closelog();
+exit($exit_code);
