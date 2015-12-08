@@ -5,6 +5,9 @@ $kml_dir = dirname(__FILE__)."/../CurvatureData/kml/";
 $curvature_path = dirname(__FILE__)."/../Curvature";
 $curvature_site_tools_path = dirname(__FILE__)."/../CurvatureSite";
 
+$rsync_options = '';
+$rsync_target = '';
+
 // $places[] = "africa/burkina-faso";
 // $places[] = "africa/canary-islands";
 // $places[] = "africa/congo-democratic-republic";
