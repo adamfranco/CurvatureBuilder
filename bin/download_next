@@ -4,7 +4,7 @@
 // open syslog, include the process ID and also send
 // the log to standard error, and use a user defined
 // logging mechanism
-openlog("CurvatureBuilder", LOG_PID, LOG_USER);
+openlog("CurvatureBuilder-Download", LOG_PID, LOG_USER);
 $exit_code = 0;
 try {
 
@@ -13,6 +13,24 @@ try {
   if (empty($places)) {
     throw new Exception("\$places must be defined.");
   }
+
+  $lock_file = dirname(__FILE__)."/../data/download.pid";
+  if (file_exists($lock_file)) {
+    $pid = trim(file_get_contents($lock_file));
+    // If there is a pid file, then maybe a download is still running.
+    // Check that it is still alive.
+    $command = shell_exec('ps -p '.$pid.' -o comm=');
+    if (empty($command)) {
+      // The process has finished without clearing up its PID file.
+      syslog(LOG_WARNING, "Lock-file exists, but PID $pid does not seem to be running. Removing $lock_file");
+      unlink($lock_file);
+    } else {
+      syslog(LOG_NOTICE, "Lock-file exists and PID $pid is still running. Skipping this download.");
+      closelog();
+      exit(0);
+    }
+  }
+  file_put_contents($lock_file, getmypid());
 
   $position_file = dirname(__FILE__)."/../data/last_downloaded";
   $last_index = FALSE;
@@ -66,5 +84,6 @@ try {
   $exit_code = $e->getCode();
 }
 
+unlink($lock_file);
 closelog();
 exit($exit_code);
