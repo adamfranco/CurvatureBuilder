@@ -69,11 +69,13 @@ try {
   if (file_exists($pbf_dir.'/'.$place.'-latest.osm.pbf')) {
     unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
   }
-  exec('wget -q -P '.escapeshellarg($pbf_dir.'/'.$place_dir).' '.escapeshellarg($url), $output, $ret);
+  exec('wget -P '.escapeshellarg($pbf_dir.'/'.$place_dir).' '.escapeshellarg($url). ' 2>&1', $output, $ret);
   if ($ret > 0) {
-    print implode("\n", $output);
-    unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
-    syslog(LOG_WARNING, "Failed downloading $url to $pbf_dir.'/'.$place_dir");
+    fwrite(STDERR, "Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
+    if (file_exists($pbf_dir.'/'.$place.'-latest.osm.pbf')) {
+      unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
+    }
+    syslog(LOG_WARNING, "Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
     $exit_code = 1;
   } else {
     rename($pbf_dir.'/'.$place.'-latest.osm.pbf', $pbf_dir.'/'.$place.'.osm.pbf');
