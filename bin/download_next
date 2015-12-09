@@ -69,7 +69,10 @@ try {
   if (file_exists($pbf_dir.'/'.$place.'-latest.osm.pbf')) {
     unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
   }
-  exec('wget -P '.escapeshellarg($pbf_dir.'/'.$place_dir).' '.escapeshellarg($url). ' 2>&1', $output, $ret);
+  if (empty($wget)) {
+    $wget = 'wget';
+  }
+  exec($wget.' -P '.escapeshellarg($pbf_dir.'/'.$place_dir).' '.escapeshellarg($url). ' 2>&1', $output, $ret);
   if ($ret > 0) {
     fwrite(STDERR, "Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
     if (file_exists($pbf_dir.'/'.$place.'-latest.osm.pbf')) {
