@@ -61,13 +61,14 @@ try {
 
   $place_dir = str_replace('-', '_', dirname($place));
   $place_file = basename($place);
+  $local_place = $place_dir.'/'.$place_file;
   if (!file_exists($pbf_dir.'/'.$place_dir)) {
     mkdir($pbf_dir.'/'.$place_dir, 0775, true);
   }
 
   // Download the file
-  if (file_exists($pbf_dir.'/'.$place.'-latest.osm.pbf')) {
-    unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
+  if (file_exists($pbf_dir.'/'.$local_place.'-latest.osm.pbf')) {
+    unlink($pbf_dir.'/'.$local_place.'-latest.osm.pbf');
   }
   if (empty($wget)) {
     $wget = 'wget';
@@ -75,14 +76,14 @@ try {
   exec($wget.' -P '.escapeshellarg($pbf_dir.'/'.$place_dir).' '.escapeshellarg($url). ' 2>&1', $output, $ret);
   if ($ret > 0) {
     fwrite(STDERR, "Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
-    if (file_exists($pbf_dir.'/'.$place.'-latest.osm.pbf')) {
-      unlink($pbf_dir.'/'.$place.'-latest.osm.pbf');
+    if (file_exists($pbf_dir.'/'.$local_place.'-latest.osm.pbf')) {
+      unlink($pbf_dir.'/'.$local_place.'-latest.osm.pbf');
     }
     syslog(LOG_WARNING, "Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
     $exit_code = 1;
   } else {
-    rename($pbf_dir.'/'.$place.'-latest.osm.pbf', $pbf_dir.'/'.$place.'.osm.pbf');
-    syslog(LOG_NOTICE, "Downloaded $url to $pbf_dir/$place.osm.pbf");
+    rename($pbf_dir.'/'.$local_place.'-latest.osm.pbf', $pbf_dir.'/'.$local_place.'.osm.pbf');
+    syslog(LOG_NOTICE, "Downloaded $url to $pbf_dir/$local_place.osm.pbf");
   }
 } catch (Exception $e) {
   syslog(LOG_ERROR, "Exception:".$e->getMessage());
