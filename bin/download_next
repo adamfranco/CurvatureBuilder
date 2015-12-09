@@ -59,7 +59,7 @@ try {
 
   $url = "http://download.geofabrik.de/${place}-latest.osm.pbf";
 
-  $place_dir = dirname($place);
+  $place_dir = str_replace('-', '_', dirname($place));
   $place_file = basename($place);
   if (!file_exists($pbf_dir.'/'.$place_dir)) {
     mkdir($pbf_dir.'/'.$place_dir, 0775, true);

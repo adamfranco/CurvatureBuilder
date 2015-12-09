@@ -52,6 +52,7 @@ try {
   }
   $exit_code = 0;
   foreach($places as $place) {
+    $place = str_replace('-', '_', dirname($place)).'/'.basename($place);
     $has_surfaces = false;
     $km = '--km';
     foreach($miles_places as $miles_place) {
