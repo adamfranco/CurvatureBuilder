@@ -169,7 +169,7 @@ try {
           if ($ret > 0) {
             throw new Exception("Error creating c-1000 curves KML for $place: \n".$stderr);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($place_kml_dir."/".basename($place).".c_1000.curves.kmz")." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+          $ret = my_shell_exec('zip -q '.escapeshellarg($place_kml_dir."/".basename($place).".c_1000.multicolor.kmz")." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
             throw new Exception("Error zipping c-1000 curves KMZ for $place: \n".$stderr);
           }
