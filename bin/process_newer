@@ -137,9 +137,13 @@ try {
           if ($ret > 0) {
             throw new Exception("Error creating c-1000 KML for $place: \n".$stderr);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($place_kml_dir."/".basename($place).".c_1000.kmz")." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+          $kmz_file = $place_kml_dir."/".basename($place).".c_1000.kmz";
+          if (file_exists($kmz_file)) {
+            unlink($kmz_file);
+          }
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
-            throw new Exception("Error zipping c-1000 KMZ for $place: \n".$stderr);
+            throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
           unlink($temp_dir.'/'.basename($place)."/doc.kml");
           rmdir($temp_dir.'/'.basename($place));
@@ -153,9 +157,13 @@ try {
           if ($ret > 0) {
             throw new Exception("Error creating c-300 KML for $place: \n".$stderr);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($place_kml_dir."/".basename($place).".c_300.kmz")." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+          $kmz_file = $place_kml_dir."/".basename($place).".c_300.kmz";
+          if (file_exists($kmz_file)) {
+            unlink($kmz_file);
+          }
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
-            throw new Exception("Error zipping c-300 KMZ for $place: \n".$stderr);
+            throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
           unlink($temp_dir.'/'.basename($place)."/doc.kml");
           rmdir($temp_dir.'/'.basename($place));
@@ -169,9 +177,13 @@ try {
           if ($ret > 0) {
             throw new Exception("Error creating c-1000 curves KML for $place: \n".$stderr);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($place_kml_dir."/".basename($place).".c_1000.multicolor.kmz")." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+          $kmz_file = $place_kml_dir."/".basename($place).".c_1000.multicolor.kmz";
+          if (file_exists($kmz_file)) {
+            unlink($kmz_file);
+          }
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
-            throw new Exception("Error zipping c-1000 curves KMZ for $place: \n".$stderr);
+            throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
           unlink($temp_dir.'/'.basename($place)."/doc.kml");
           rmdir($temp_dir.'/'.basename($place));
@@ -187,9 +199,13 @@ try {
             if ($ret > 0) {
               throw new Exception("Error creating surfaces KML for $place: \n".$stderr);
             }
-            $ret = my_shell_exec('zip -q '.escapeshellarg($place_kml_dir."/".basename($place).".surfaces.kmz")." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+            $kmz_file = $place_kml_dir."/".basename($place).".surfaces.kmz";
+            if (file_exists($kmz_file)) {
+              unlink($kmz_file);
+            }
+            $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
             if ($ret > 0) {
-              throw new Exception("Error zipping surfaces KMZ for $place: \n".$stderr);
+              throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
             }
             unlink($temp_dir.'/'.basename($place)."/doc.kml");
             rmdir($temp_dir.'/'.basename($place));
