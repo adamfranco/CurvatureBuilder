@@ -248,7 +248,7 @@ try {
     if (empty($rsync)) {
       $rsync = 'rsync';
     }
-    exec($rsync.' -a --exclude=".*" '.$rsync_options.' '.$kml_dir.'/ '.$rsync_target, $output, $ret);
+    exec($rsync.' -a --delete --exclude=".*" '.$rsync_options.' '.$kml_dir.'/ '.$rsync_target, $output, $ret);
     if ($ret > 0) {
       syslog(LOG_WARNING, "Error rsyncing files:\n".implode("\n", $output));
       print implode("\n", $output)."\n\n";
