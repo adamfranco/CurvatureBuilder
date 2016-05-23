@@ -71,7 +71,6 @@ try {
   }
   $exit_code = 0;
   foreach($places as $place) {
-    $place = str_replace('-', '_', dirname($place)).'/'.basename($place);
     $has_surfaces = false;
     $units = '--units km';
     foreach($miles_places as $miles_place) {
@@ -79,6 +78,7 @@ try {
         $units = '--units mi';
       }
     }
+    $place = str_replace('-', '_', dirname($place)).'/'.basename($place);
     $pbf_file = $pbf_dir.'/'.$place.'.osm.pbf';
     if (file_exists($pbf_file)) {
       $pbf_tstamp = filemtime($pbf_file);
