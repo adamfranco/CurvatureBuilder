@@ -100,13 +100,15 @@ try {
           mkdir($place_kml_dir, 0775, true);
         }
         try {
-          syslog(LOG_NOTICE, "Processing curvature for $place ...");
+          syslog(LOG_NOTICE, "Collecting ways for $place ...");
 
           // Collect the highways out of the input file.
           $ret = my_shell_exec($curvature_path.'/curvature-collect --highway_types "motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,service" '.escapeshellarg($pbf_file).' > '.escapeshellarg($temp_dir.'/'.basename($place).'-1.msgpack'), $stdout, $stderr);
           if ($ret > 0) {
             throw new Exception("Error collecting ways for $place: \n".$stderr);
           }
+
+          syslog(LOG_NOTICE, "Ways collected for $place, processing curvature...");
 
           // Filter and process our data for the main curvature KML outputs.
           $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-1.msgpack')
@@ -121,16 +123,24 @@ try {
             .' | '.$curvature_path."/curvature-pp roll_up_length"
             .' | '.$curvature_path."/curvature-pp roll_up_curvature"
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 300"
-            .' | '.$curvature_path."/curvature-pp sort_collections_by_sum --key curvature --direction DESC"
+            .' | '.$curvature_path."/curvature-pp remove_way_properties --properties refs,coords"
             .' > '.escapeshellarg($temp_dir.'/'.basename($place).'-2.msgpack'), $stdout, $stderr);
           if ($ret > 0) {
             throw new Exception("Error processing curvature for $place: \n".$stderr);
           }
-          syslog(LOG_NOTICE, "Processed curvature for $place");
+          syslog(LOG_NOTICE, "Processed curvature for $place, sorting...");
+
+          $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-2.msgpack')
+            .' | '.$curvature_path."/curvature-pp sort_collections_by_sum --key curvature --direction DESC"
+            .' > '.escapeshellarg($temp_dir.'/'.basename($place).'-3.msgpack'), $stdout, $stderr);
+          if ($ret > 0) {
+            throw new Exception("Error sorting $place: \n".$stderr);
+          }
+          syslog(LOG_NOTICE, "Sorting complete for $place, generating output...");
 
           // Output the c-1000 KML.
           mkdir($temp_dir.'/'.basename($place));
-          $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-2.msgpack')
+          $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-3.msgpack')
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 1000"
             .' | '.$curvature_path."/curvature-output-kml --min_curvature 1000 --max_curvature 20000 $units"
             ." > ".escapeshellarg($temp_dir."/".basename($place)."/doc.kml"), $stdout, $stderr);
@@ -150,7 +160,7 @@ try {
 
           // Output the c-300 KML.
           mkdir($temp_dir.'/'.basename($place));
-          $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-2.msgpack')
+          $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-3.msgpack')
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 300"
             .' | '.$curvature_path."/curvature-output-kml --min_curvature 300 --max_curvature 20000 $units"
             ." > ".escapeshellarg($temp_dir."/".basename($place)."/doc.kml"), $stdout, $stderr);
@@ -170,7 +180,7 @@ try {
 
           // Output the c-1000 curves-colored KML.
           mkdir($temp_dir.'/'.basename($place));
-          $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-2.msgpack')
+          $ret = my_shell_exec('cat '.escapeshellarg($temp_dir.'/'.basename($place).'-3.msgpack')
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 1000"
             .' | '.$curvature_path."/curvature-output-kml-curve-radius $units"
             ." > ".escapeshellarg($temp_dir."/".basename($place)."/doc.kml"), $stdout, $stderr);
@@ -213,11 +223,13 @@ try {
 
           unlink($temp_dir.'/'.basename($place).'-1.msgpack');
           unlink($temp_dir.'/'.basename($place).'-2.msgpack');
+          unlink($temp_dir.'/'.basename($place).'-3.msgpack');
           syslog(LOG_NOTICE, "KML output for $place complete.");
 
         } catch (Exception $e) {
           unlink($temp_dir.'/'.basename($place).'-1.msgpack');
           unlink($temp_dir.'/'.basename($place).'-2.msgpack');
+          unlink($temp_dir.'/'.basename($place).'-3.msgpack');
           unlink($temp_dir.'/'.basename($place).'/doc.kml');
           rmdir($temp_dir.'/'.basename($place));
 
