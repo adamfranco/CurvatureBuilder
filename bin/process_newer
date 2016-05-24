@@ -152,29 +152,29 @@ try {
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --max 1000"
             .' > '.escapeshellarg($tmp_base.'-300-1000.msgpack'), $stdout, $stderr);
           $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-2.msgpack')
-            .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 300 --max 10000"
+            .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 1000 --max 10000"
             .' > '.escapeshellarg($tmp_base.'-1000-10000.msgpack'), $stdout, $stderr);
           $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-2.msgpack')
-            .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 1000"
+            .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 10000"
             .' > '.escapeshellarg($tmp_base.'-10000-plus.msgpack'), $stdout, $stderr);
           syslog(LOG_NOTICE, "Done dividing data set for $place...");
 
           # Sort each chunk if it is small enough and combine into -3.msgpack
-          # 1000-plus first.
-          $tmp_size = filesize($tmp_base.'-1000-plus.msgpack');
+          # 10000-plus first.
+          $tmp_size = filesize($tmp_base.'-10000-plus.msgpack');
           if ($tmp_size <= $sort_limit) {
-            syslog(LOG_NOTICE, "Sorting 1000-plus $place (".formatBytes($tmp_size).").");
-            $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1000-plus.msgpack')
+            syslog(LOG_NOTICE, "Sorting 10000-plus $place (".formatBytes($tmp_size).").");
+            $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-10000-plus.msgpack')
               .' | '.$curvature_path."/curvature-pp sort_collections_by_sum --key curvature --direction DESC"
               .' > '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
             if ($ret > 0) {
-              throw new Exception("Error sorting 1000-plus $place: \n".$stderr);
+              throw new Exception("Error sorting 10000-plus $place: \n".$stderr);
             }
-            unlink($tmp_base.'-1000-plus.msgpack');
-            syslog(LOG_NOTICE, "Sorting 1000-plus complete for $place.");
+            unlink($tmp_base.'-10000-plus.msgpack');
+            syslog(LOG_NOTICE, "Sorting 10000-plus complete for $place.");
           } else {
-            syslog(LOG_NOTICE, "1000-plus data size for $place is ".formatBytes($tmp_size).", larger than our limit of ".formatBytes($sort_limit).". Skipping sort.");
-            rename($tmp_base.'-1000-plus.msgpack', $tmp_base.'-3.msgpack');
+            syslog(LOG_NOTICE, "Skipping sort for $place 10000+. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
+            rename($tmp_base.'-10000-plus.msgpack', $tmp_base.'-3.msgpack');
           }
           # 1000-10000 next
           $tmp_size = filesize($tmp_base.'-1000-10000.msgpack');
@@ -189,7 +189,7 @@ try {
             }
             syslog(LOG_NOTICE, "Sorting 1000-10000 complete for $place.");
           } else {
-            syslog(LOG_NOTICE, "1000-10000 data size for $place is ".formatBytes($tmp_size).", larger than our limit of ".formatBytes($sort_limit).". Skipping sort.");
+            syslog(LOG_NOTICE, "Skipping sort for $place 1000-10000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1000-10000.msgpack')
               .' >> '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
             unlink($tmp_base.'-1000-10000.msgpack');
@@ -210,7 +210,7 @@ try {
             }
             syslog(LOG_NOTICE, "Sorting 300-1000 complete for $place.");
           } else {
-            syslog(LOG_NOTICE, "300-1000 data size for $place is ".formatBytes($tmp_size).", larger than our limit of ".formatBytes($sort_limit).". Skipping sort.");
+            syslog(LOG_NOTICE, "Skipping sort for $place 300-1000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-300-1000.msgpack')
               .' >> '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
             unlink($tmp_base.'-300-1000.msgpack');
@@ -303,20 +303,48 @@ try {
             rmdir($tmp_base);
           }
 
-          unlink($tmp_base.'-1.msgpack');
-          unlink($tmp_base.'-2.msgpack');
-          unlink($tmp_base.'-1000-plus.msgpack');
-          unlink($tmp_base.'-300-1000.msgpack');
-          unlink($tmp_base.'-3.msgpack');
+          if (file_exists($tmp_base.'-1.msgpack')) {
+            unlink($tmp_base.'-1.msgpack');
+          }
+          if (file_exists($tmp_base.'-2.msgpack')) {
+            unlink($tmp_base.'-2.msgpack');
+          }
+          if (file_exists($tmp_base.'-10000-plus.msgpack')) {
+            unlink($tmp_base.'-10000-plus.msgpack');
+          }
+          if (file_exists($tmp_base.'-1000-10000.msgpack')) {
+            unlink($tmp_base.'-1000-10000.msgpack');
+          }
+          if (file_exists($tmp_base.'-300-1000.msgpack')) {
+            unlink($tmp_base.'-300-1000.msgpack');
+          }
+          if (file_exists($tmp_base.'-3.msgpack')) {
+            unlink($tmp_base.'-3.msgpack');
+          }
           syslog(LOG_NOTICE, "KML output for $place complete.");
 
         } catch (Exception $e) {
-          unlink($tmp_base.'-1.msgpack');
-          unlink($tmp_base.'-2.msgpack');
-          unlink($tmp_base.'-1000-plus.msgpack');
-          unlink($tmp_base.'-300-1000.msgpack');
-          unlink($tmp_base.'-3.msgpack');
-          unlink($tmp_base.'/doc.kml');
+          if (file_exists($tmp_base.'-1.msgpack')) {
+            unlink($tmp_base.'-1.msgpack');
+          }
+          if (file_exists($tmp_base.'-2.msgpack')) {
+            unlink($tmp_base.'-2.msgpack');
+          }
+          if (file_exists($tmp_base.'-10000-plus.msgpack')) {
+            unlink($tmp_base.'-10000-plus.msgpack');
+          }
+          if (file_exists($tmp_base.'-1000-10000.msgpack')) {
+            unlink($tmp_base.'-1000-10000.msgpack');
+          }
+          if (file_exists($tmp_base.'-300-1000.msgpack')) {
+            unlink($tmp_base.'-300-1000.msgpack');
+          }
+          if (file_exists($tmp_base.'-3.msgpack')) {
+            unlink($tmp_base.'-3.msgpack');
+          }
+          if (file_exists($tmp_base.'/doc.kml')) {
+            unlink($tmp_base.'/doc.kml');
+          }
           rmdir($tmp_base);
 
           syslog(LOG_WARNING, $e->getMessage());
