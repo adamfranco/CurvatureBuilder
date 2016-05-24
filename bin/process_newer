@@ -218,8 +218,8 @@ try {
               throw new Exception("Error sorting 300-1000 $place: \n".$stderr);
             }
           }
-
-          syslog(LOG_NOTICE, "Generating output for $place...");
+          $tmp_size = filesize($tmp_base.'-3.msgpack');
+          syslog(LOG_NOTICE, "Sorting complete for $place (".formatBytes($tmp_size)."). Generating output...");
 
           // Output the c-1000 KML.
           mkdir($tmp_base);
