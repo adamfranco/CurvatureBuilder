@@ -157,7 +157,6 @@ try {
           $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-2.msgpack')
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 10000"
             .' > '.escapeshellarg($tmp_base.'-10000-plus.msgpack'), $stdout, $stderr);
-          syslog(LOG_NOTICE, "Done dividing data set for $place...");
 
           # Sort each chunk if it is small enough and combine into -3.msgpack
           # 10000-plus first.
@@ -171,7 +170,6 @@ try {
               throw new Exception("Error sorting 10000-plus $place: \n".$stderr);
             }
             unlink($tmp_base.'-10000-plus.msgpack');
-            syslog(LOG_NOTICE, "Sorting 10000-plus complete for $place.");
           } else {
             syslog(LOG_NOTICE, "Skipping sort for $place 10000+. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             rename($tmp_base.'-10000-plus.msgpack', $tmp_base.'-3.msgpack');
@@ -187,7 +185,6 @@ try {
             if ($ret > 0) {
               throw new Exception("Error sorting 1000-10000 $place: \n".$stderr);
             }
-            syslog(LOG_NOTICE, "Sorting 1000-10000 complete for $place.");
           } else {
             syslog(LOG_NOTICE, "Skipping sort for $place 1000-10000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1000-10000.msgpack')
@@ -208,7 +205,6 @@ try {
             if ($ret > 0) {
               throw new Exception("Error sorting 300-1000 $place: \n".$stderr);
             }
-            syslog(LOG_NOTICE, "Sorting 300-1000 complete for $place.");
           } else {
             syslog(LOG_NOTICE, "Skipping sort for $place 300-1000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-300-1000.msgpack')
