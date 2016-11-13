@@ -265,7 +265,7 @@ try {
           if ($ret > 0) {
             throw new Exception("Error creating c-1000 curves KML for $place: \n".$stderr);
           }
-          $kmz_file = $place_kml_dir."/".basename($place).".c_1000.multicolor.kmz";
+          $kmz_file = $place_kml_dir."/".basename($place).".c_1000.curves.kmz";
           if (file_exists($kmz_file)) {
             unlink($kmz_file);
           }
