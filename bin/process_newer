@@ -232,7 +232,7 @@ try {
           }
           # Add the legend.
           mkdir($temp_dir."/".basename($place)."/images");
-          copy($curvature_path."/../output-master/legend.png", $temp_dir."/".basename($place)."/images/");
+          copy($curvature_path."/../output-master/legend.png", $temp_dir."/".basename($place)."/images/legend.png");
           # Zip the KMZ
           $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg(basename($place)."/images/legend.png"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
@@ -257,7 +257,7 @@ try {
           }
           # Add the legend.
           mkdir($temp_dir."/".basename($place)."/images");
-          copy($curvature_path."/../output-master/legend.png", $temp_dir."/".basename($place)."/images/");
+          copy($curvature_path."/../output-master/legend.png", $temp_dir."/".basename($place)."/images/legend.png");
           # Zip the KMZ
           $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg(basename($place)."/images/legend.png"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
