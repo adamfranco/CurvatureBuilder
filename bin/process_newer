@@ -219,7 +219,7 @@ try {
 
           # Add the legend.
           mkdir($temp_dir."/images");
-          copy($curvature_path."/../output-master/legend.png", $temp_dir."/".basename($place)."/images/legend.png");
+          copy($curvature_path."/../output-master/legend.png", $temp_dir."/images/legend.png");
 
           // Output the c-1000 KML.
           mkdir($tmp_base);
