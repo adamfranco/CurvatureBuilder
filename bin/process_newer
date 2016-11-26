@@ -230,11 +230,17 @@ try {
           if (file_exists($kmz_file)) {
             unlink($kmz_file);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+          # Add the legend.
+          mkdir($temp_dir."/".basename($place)."/images");
+          cp($curvature_path."/../output-master/legend.png", $temp_dir."/".basename($place)."/images/");
+          # Zip the KMZ
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg(basename($place)."/images/legend.png"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
             throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
           unlink($tmp_base."/doc.kml");
+          unlink($tmp_base."/images/legend.png");
+          rmdir($tmp_base."/images");
           rmdir($tmp_base);
 
           // Output the c-300 KML.
@@ -249,11 +255,17 @@ try {
           if (file_exists($kmz_file)) {
             unlink($kmz_file);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+          # Add the legend.
+          mkdir($temp_dir."/".basename($place)."/images");
+          cp($curvature_path."/../output-master/legend.png", $temp_dir."/".basename($place)."/images/");
+          # Zip the KMZ
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg(basename($place)."/images/legend.png"), $stderr, $stdout, $temp_dir);
           if ($ret > 0) {
             throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
           unlink($tmp_base."/doc.kml");
+          unlink($tmp_base."/images/legend.png");
+          rmdir($tmp_base."/images");
           rmdir($tmp_base);
 
           // Output the c-1000 curves-colored KML.
