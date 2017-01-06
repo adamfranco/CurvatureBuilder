@@ -91,6 +91,7 @@ try {
         $units = '--units mi';
       }
     }
+    $source_key = $place;
     $place = str_replace('-', '_', dirname($place)).'/'.basename($place);
     $pbf_file = $pbf_dir.'/'.$place.'.osm.pbf';
     if (file_exists($pbf_file)) {
@@ -138,7 +139,7 @@ try {
             .' | '.$curvature_path."/curvature-pp roll_up_length"
             .' | '.$curvature_path."/curvature-pp roll_up_curvature"
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --min 300"
-            .' | '.$curvature_path."/curvature-pp remove_way_properties --properties refs,coords"
+            .' | '.$curvature_path."/curvature-pp remove_way_properties --properties coords"
             .' > '.escapeshellarg($tmp_base.'-2.msgpack'), $stdout, $stderr);
           if ($ret > 0) {
             throw new Exception("Error processing curvature for $place: \n".$stderr);
@@ -305,6 +306,35 @@ try {
             }
             unlink($tmp_base."/doc.kml");
             rmdir($tmp_base);
+          }
+
+          // Output to postgis if configured.
+          if (!empty($postgis_database)) {
+            $command = 'cat '.escapeshellarg($tmp_base.'-3.msgpack')
+              .' | '.$curvature_path."/curvature-output-postgis -s"
+              ." --source ".escapeshellarg($source_key)
+              ." --database ".escapeshellarg($postgis_database);
+            if (!empty($postgis_host)) {
+              $command .= " --host ".escapeshellarg($postgis_host);
+            }
+            if (!empty($postgis_port)) {
+              $command .= " --port ".escapeshellarg($postgis_port);
+            }
+            if (!empty($postgis_user)) {
+              $command .= " --user ".escapeshellarg($postgis_user);
+            }
+            $command_copy = $command;
+            if (!empty($postgis_password)) {
+              $command .= " --password ".escapeshellarg($postgis_password);
+              $command_copy .= " --password <hidden>";
+            }
+
+            syslog(LOG_NOTICE, "Sending to PostGIS for $place ...");
+            $ret = my_shell_exec($command, $stderr, $stdout, $temp_dir);
+            if ($ret > 0) {
+              throw new Exception("Error sending $place to PostGIS: \n$command_copy \n".$stderr."\n".$stdout);
+            }
+            syslog(LOG_NOTICE, "Sending to PostGIS complete for $place: ".$stderr."\n".$stdout);
           }
 
           if (file_exists($tmp_base.'-1.msgpack')) {

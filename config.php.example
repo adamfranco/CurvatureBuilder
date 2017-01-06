@@ -11,6 +11,13 @@ $rsync = 'rsync';
 $rsync_options = '';
 $rsync_target = '';
 
+// Optional PostGIS output
+$postgis_database = ''; // 'curvature' or similar.
+$postgis_host = ''; // Hostname of the database server, localhost, db.example.com, IP address, etc.
+$postgis_port = 5432; // Postgres default is 5432.
+$postgis_user = ''; // Username to connect as.
+$postgis_password = ''; // Pasword for this user.
+
 // $places[] = "africa/burkina-faso";
 // $places[] = "africa/canary-islands";
 // $places[] = "africa/congo-democratic-republic";
