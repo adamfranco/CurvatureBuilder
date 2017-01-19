@@ -145,6 +145,11 @@ try {
             throw new Exception("Error processing curvature for $place: \n".$stderr);
           }
           $tmp_size = filesize($tmp_base.'-2.msgpack');
+          // Halt if we don't have data.
+          if ($tmp_size < 100) {
+            throw new Exception("Error processing curvature - no data written to $tmp_base-2.msgpack . Size is
+            ".formatBytes($tmp_size)."\nSTDERR:\n$stderr\nSTDOUT:\n$stdout");
+          }
           syslog(LOG_NOTICE, "Processed curvature for $place (".formatBytes($tmp_size).").");
 
           # Split the output into two chunks, 300-1000 curvature and 1000+ curvature.
