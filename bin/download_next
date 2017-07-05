@@ -81,6 +81,10 @@ try {
     }
     syslog(LOG_WARNING, "Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
     $exit_code = 1;
+    // If we receive a 429 "Too Many Requests" error, try the same file again.
+    if (preg_match('/ERROR 429:/', implode("\n", $output))) {
+      file_put_contents($position_file, $last_downloaded);
+    }
   } else {
     rename($pbf_dir.'/'.$local_place.'-latest.osm.pbf', $pbf_dir.'/'.$local_place.'.osm.pbf');
     syslog(LOG_NOTICE, "Downloaded $url to $pbf_dir/$local_place.osm.pbf");
