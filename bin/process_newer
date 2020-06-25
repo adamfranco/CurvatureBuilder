@@ -42,10 +42,10 @@ try {
     $command = shell_exec('ps -p '.$pid.' -o comm=');
     if (empty($command)) {
       // The process has finished without clearing up its PID file.
-      syslog(LOG_WARNING, "Lock-file exists, but PID $pid does not seem to be running. Removing $lock_file");
+      syslog(LOG_WARNING, "Curvature Builder: Lock-file exists, but PID $pid does not seem to be running. Removing $lock_file");
       unlink($lock_file);
     } else {
-      syslog(LOG_NOTICE, "Lock-file exists and PID $pid is still running. Skipping this run.");
+      syslog(LOG_NOTICE, "Curvature Builder: Lock-file exists and PID $pid is still running. Skipping this run.");
       closelog();
       exit(0);
     }
@@ -114,7 +114,7 @@ try {
           mkdir($place_kml_dir, 0775, true);
         }
         try {
-          syslog(LOG_NOTICE, "Collecting ways for $place ...");
+          syslog(LOG_NOTICE, "Curvature Builder: Collecting ways for $place ...");
 
           $tmp_base = $temp_dir.'/'.basename($place);
 
@@ -124,7 +124,7 @@ try {
             throw new Exception("Error collecting ways for $place: \n".$stderr);
           }
           $tmp_size = filesize($tmp_base.'-1.msgpack');
-          syslog(LOG_NOTICE, "Ways collected for $place (".formatBytes($tmp_size)."), processing curvature...");
+          syslog(LOG_NOTICE, "Curvature Builder: Ways collected for $place (".formatBytes($tmp_size)."), processing curvature...");
 
           // Filter and process our data for the main curvature KML outputs.
           $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1.msgpack')
@@ -153,10 +153,10 @@ try {
             throw new Exception("Error processing curvature - no data written to $tmp_base-2.msgpack . Size is
             ".formatBytes($tmp_size)."\nSTDERR:\n$stderr\nSTDOUT:\n$stdout");
           }
-          syslog(LOG_NOTICE, "Processed curvature for $place (".formatBytes($tmp_size).").");
+          syslog(LOG_NOTICE, "Curvature Builder: Processed curvature for $place (".formatBytes($tmp_size).").");
 
           # Split the output into two chunks, 300-1000 curvature and 1000+ curvature.
-          syslog(LOG_NOTICE, "Dividing data set for $place...");
+          syslog(LOG_NOTICE, "Curvature Builder: Dividing data set for $place...");
           $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-2.msgpack')
             .' | '.$curvature_path."/curvature-pp filter_collections_by_curvature --max 1000"
             .' > '.escapeshellarg($tmp_base.'-300-1000.msgpack'), $stdout, $stderr);
@@ -171,7 +171,7 @@ try {
           # 10000-plus first.
           $tmp_size = filesize($tmp_base.'-10000-plus.msgpack');
           if ($tmp_size <= $sort_limit) {
-            syslog(LOG_NOTICE, "Sorting 10000-plus $place (".formatBytes($tmp_size).").");
+            syslog(LOG_NOTICE, "Curvature Builder: Sorting 10000-plus $place (".formatBytes($tmp_size).").");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-10000-plus.msgpack')
               .' | '.$curvature_path."/curvature-pp sort_collections_by_sum --key curvature --direction DESC"
               .' > '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
@@ -180,13 +180,13 @@ try {
             }
             unlink($tmp_base.'-10000-plus.msgpack');
           } else {
-            syslog(LOG_NOTICE, "Skipping sort for $place 10000+. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
+            syslog(LOG_NOTICE, "Curvature Builder: Skipping sort for $place 10000+. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             rename($tmp_base.'-10000-plus.msgpack', $tmp_base.'-3.msgpack');
           }
           # 1000-10000 next
           $tmp_size = filesize($tmp_base.'-1000-10000.msgpack');
           if ($tmp_size <= $sort_limit) {
-            syslog(LOG_NOTICE, "Sorting 1000-10000 $place (".formatBytes($tmp_size).").");
+            syslog(LOG_NOTICE, "Curvature Builder: Sorting 1000-10000 $place (".formatBytes($tmp_size).").");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1000-10000.msgpack')
               .' | '.$curvature_path."/curvature-pp sort_collections_by_sum --key curvature --direction DESC"
               .' >> '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
@@ -195,7 +195,7 @@ try {
               throw new Exception("Error sorting 1000-10000 $place: \n".$stderr);
             }
           } else {
-            syslog(LOG_NOTICE, "Skipping sort for $place 1000-10000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
+            syslog(LOG_NOTICE, "Curvature Builder: Skipping sort for $place 1000-10000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1000-10000.msgpack')
               .' >> '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
             unlink($tmp_base.'-1000-10000.msgpack');
@@ -206,7 +206,7 @@ try {
           # 300-1000 next
           $tmp_size = filesize($tmp_base.'-300-1000.msgpack');
           if ($tmp_size <= $sort_limit) {
-            syslog(LOG_NOTICE, "Sorting 300-1000 $place (".formatBytes($tmp_size).").");
+            syslog(LOG_NOTICE, "Curvature Builder: Sorting 300-1000 $place (".formatBytes($tmp_size).").");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-300-1000.msgpack')
               .' | '.$curvature_path."/curvature-pp sort_collections_by_sum --key curvature --direction DESC"
               .' >> '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
@@ -215,7 +215,7 @@ try {
               throw new Exception("Error sorting 300-1000 $place: \n".$stderr);
             }
           } else {
-            syslog(LOG_NOTICE, "Skipping sort for $place 300-1000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
+            syslog(LOG_NOTICE, "Curvature Builder: Skipping sort for $place 300-1000. ".formatBytes($tmp_size)." data size is larger than our limit of ".formatBytes($sort_limit).".");
             $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-300-1000.msgpack')
               .' >> '.escapeshellarg($tmp_base.'-3.msgpack'), $stdout, $stderr);
             unlink($tmp_base.'-300-1000.msgpack');
@@ -224,7 +224,7 @@ try {
             }
           }
           $tmp_size = filesize($tmp_base.'-3.msgpack');
-          syslog(LOG_NOTICE, "Sorting complete for $place (".formatBytes($tmp_size)."). Generating output...");
+          syslog(LOG_NOTICE, "Curvature Builder: Sorting complete for $place (".formatBytes($tmp_size)."). Generating output...");
           // Halt if we don't have data.
           if ($tmp_size < 100) {
             throw new Exception("No data found for $place . Sorted data is ".formatBytes($tmp_size).". Not generating new outputs or syncing.");
@@ -345,12 +345,12 @@ try {
               $command_copy .= " --password <hidden>";
             }
 
-            syslog(LOG_NOTICE, "Sending to PostGIS for $place ...");
+            syslog(LOG_NOTICE, "Curvature Builder: Sending to PostGIS for $place ...");
             $ret = my_shell_exec($command, $stderr, $stdout, $temp_dir);
             if ($ret > 0) {
               throw new Exception("Error sending $place to PostGIS: \n$command_copy \n".$stderr."\n".$stdout);
             }
-            syslog(LOG_NOTICE, "Sending to PostGIS complete for $place: ".$stderr."\n".$stdout);
+            syslog(LOG_NOTICE, "Curvature Builder: Sending to PostGIS complete for $place: ".$stderr."\n".$stdout);
           }
 
           if (file_exists($tmp_base.'-1.msgpack')) {
@@ -371,7 +371,7 @@ try {
           if (file_exists($tmp_base.'-3.msgpack')) {
             unlink($tmp_base.'-3.msgpack');
           }
-          syslog(LOG_NOTICE, "KML output for $place complete.");
+          syslog(LOG_NOTICE, "Curvature Builder: KML output for $place complete.");
 
         } catch (Exception $e) {
           if (file_exists($tmp_base.'-1.msgpack')) {
@@ -397,7 +397,7 @@ try {
           }
           rmdir($tmp_base);
 
-          syslog(LOG_WARNING, $e->getMessage());
+          syslog(LOG_WARNING, "Curvature Builder: " . $e->getMessage());
           fwrite(STDERR, $e->getMessage()."\n");
           $exit_code = $e->getCode();
         }
@@ -413,11 +413,11 @@ try {
   }
   exec($curvature_site_tools_path.'/create_indices', $output, $ret);
   if ($ret > 0) {
-    syslog(LOG_WARNING, "Error creating indices:\n".implode("\n", $output));
+    syslog(LOG_WARNING, "Curvature Builder: Error creating indices:\n".implode("\n", $output));
     print implode("\n", $output)."\n\n";
     $exit_code = 3;
   } else {
-    syslog(LOG_NOTICE, "Created indices");
+    syslog(LOG_NOTICE, "Curvature Builder: Created indices");
   }
 
   if (!empty($rsync_target)) {
@@ -426,15 +426,15 @@ try {
     }
     exec($rsync.' -a --delete --exclude=".*" '.$rsync_options.' '.$kml_dir.'/ '.$rsync_target, $output, $ret);
     if ($ret > 0) {
-      syslog(LOG_WARNING, "Error rsyncing files:\n".implode("\n", $output));
+      syslog(LOG_WARNING, "Curvature Builder: Error rsyncing files:\n".implode("\n", $output));
       print implode("\n", $output)."\n\n";
       $exit_code = 4;
     } else {
-      syslog(LOG_NOTICE, "Rsync curvature files");
+      syslog(LOG_NOTICE, "Curvature Builder: Rsync curvature files completed.");
     }
   }
 } catch (Exception $e) {
-  syslog(LOG_ERR, "Exception:".$e->getMessage());
+  syslog(LOG_ERR, "Curvature Builder: Exception:".$e->getMessage());
   $exit_code = $e->getCode();
 }
 

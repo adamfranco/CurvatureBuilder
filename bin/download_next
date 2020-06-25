@@ -22,10 +22,10 @@ try {
     $command = shell_exec('ps -p '.$pid.' -o comm=');
     if (empty($command)) {
       // The process has finished without clearing up its PID file.
-      syslog(LOG_WARNING, "Lock-file exists, but PID $pid does not seem to be running. Removing $lock_file");
+      syslog(LOG_WARNING, "Curvature Builder - Download: Lock-file exists, but PID $pid does not seem to be running. Removing $lock_file");
       unlink($lock_file);
     } else {
-      syslog(LOG_NOTICE, "Lock-file exists and PID $pid is still running. Skipping this download.");
+      syslog(LOG_NOTICE, "Curvature Builder - Download: Lock-file exists and PID $pid is still running. Skipping this download.");
       closelog();
       exit(0);
     }
@@ -79,7 +79,7 @@ try {
     if (file_exists($pbf_dir.'/'.$local_place.'-latest.osm.pbf')) {
       unlink($pbf_dir.'/'.$local_place.'-latest.osm.pbf');
     }
-    syslog(LOG_WARNING, "Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
+    syslog(LOG_WARNING, "Curvature Builder - Download: Failed downloading $url to $pbf_dir/$place_dir \n".implode("\n", $output));
     $exit_code = 1;
     // If we receive a 429 "Too Many Requests" error, try the same file again.
     if (preg_match('/ERROR 429:/', implode("\n", $output))) {
@@ -87,10 +87,10 @@ try {
     }
   } else {
     rename($pbf_dir.'/'.$local_place.'-latest.osm.pbf', $pbf_dir.'/'.$local_place.'.osm.pbf');
-    syslog(LOG_NOTICE, "Downloaded $url to $pbf_dir/$local_place.osm.pbf");
+    syslog(LOG_NOTICE, "Curvature Builder - Download: Downloaded $url to $pbf_dir/$local_place.osm.pbf");
   }
 } catch (Exception $e) {
-  syslog(LOG_ERROR, "Exception:".$e->getMessage());
+  syslog(LOG_ERROR, "Curvature Builder - Download: Exception:".$e->getMessage());
   $exit_code = $e->getCode();
 }
 
