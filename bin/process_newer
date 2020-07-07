@@ -130,6 +130,7 @@ try {
           $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1.msgpack')
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag surface --values 'unpaved,compacted,dirt,gravel,fine_gravel,sand,grass,ground,pebblestone,mud,clay,dirt/sand,soil'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag service --values 'driveway,parking_aisle,drive-through,parking,bus,emergency_access'"
+            .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag area --values 'yes'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag golf --values 'cartpath'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag vehicle --values 'no'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag motor_vehicle --values 'no'"
