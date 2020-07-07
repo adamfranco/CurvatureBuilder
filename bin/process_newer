@@ -119,7 +119,7 @@ try {
           $tmp_base = $temp_dir.'/'.basename($place);
 
           // Collect the highways out of the input file.
-          $ret = my_shell_exec($curvature_path.'/curvature-collect --highway_types "motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,service" '.escapeshellarg($pbf_file).' > '.escapeshellarg($tmp_base.'-1.msgpack'), $stdout, $stderr);
+          $ret = my_shell_exec($curvature_path.'/curvature-collect --highway_types "motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,service,raceway" '.escapeshellarg($pbf_file).' > '.escapeshellarg($tmp_base.'-1.msgpack'), $stdout, $stderr);
           if ($ret > 0) {
             throw new Exception("Error collecting ways for $place: \n".$stderr);
           }
@@ -136,6 +136,7 @@ try {
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag vehicle --values 'no,private'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag motor_vehicle --values 'no,private'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways --match 'And(TagEmpty(\"name\"), TagEmpty(\"ref\"), TagEquals(\"highway\", \"residential\"), TagEquals(\"tiger:reviewed\", \"no\"))'"
+            .' | '.$curvature_path."/curvature-pp filter_out_ways --match 'And(TagEquals(\"highway\", \"raceway\"), TagEquals(\"sport\", \"motocross\"))'"
             .' | '.$curvature_path."/curvature-pp add_segments"
             .' | '.$curvature_path."/curvature-pp add_segment_length_and_radius"
             .' | '.$curvature_path."/curvature-pp add_segment_curvature"
