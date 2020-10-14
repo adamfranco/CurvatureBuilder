@@ -362,7 +362,9 @@ try {
             // Write the output of the PostGIS command to our data directory.
             // This should be a GeoJSON string which holds a bounding box of the
             // area affected by the updates (additions and removals).
-            file_put_contents($db_update_dir.'/postgis_updated--'.date('Y-m-d\TH:i:s').'--'.str_replace('/', '-', $place).'.geojson', $stdout);
+            if (!empty($stdout)) {
+              file_put_contents($db_update_dir.'/postgis_updated--'.date('Y-m-d\TH:i:s').'--'.str_replace('/', '-', $place).'.geojson', $stdout);
+            }
             if ($ret > 0) {
               throw new Exception("Error sending $place to PostGIS: \n$command_copy \n".$stderr."\n".$stdout);
             }
