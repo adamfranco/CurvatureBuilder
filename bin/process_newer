@@ -259,7 +259,7 @@ try {
           if (file_exists($kmz_file)) {
             unlink($kmz_file);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg("images/legend.png"), $stderr, $stdout, $temp_dir);
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg("images/legend.png"), $stdout, $stderr, $temp_dir);
           if ($ret > 0) {
             throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
@@ -278,7 +278,7 @@ try {
           if (file_exists($kmz_file)) {
             unlink($kmz_file);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg("images/legend.png"), $stderr, $stdout, $temp_dir);
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml")." ".escapeshellarg("images/legend.png"), $stdout, $stderr, $temp_dir);
           if ($ret > 0) {
             throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
@@ -302,7 +302,7 @@ try {
           if (file_exists($kmz_file)) {
             unlink($kmz_file);
           }
-          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+          $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stdout, $stderr, $temp_dir);
           if ($ret > 0) {
             throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
           }
@@ -324,7 +324,7 @@ try {
             if (file_exists($kmz_file)) {
               unlink($kmz_file);
             }
-            $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stderr, $stdout, $temp_dir);
+            $ret = my_shell_exec('zip -q '.escapeshellarg($kmz_file)." ".escapeshellarg(basename($place)."/doc.kml"), $stdout, $stderr, $temp_dir);
             if ($ret > 0) {
               throw new Exception("Error zipping KMZ for $place: $kml_file \n".$stderr);
             }
@@ -358,7 +358,7 @@ try {
             }
 
             syslog(LOG_NOTICE, "Curvature Builder: Sending to PostGIS for $place ...");
-            $ret = my_shell_exec($command, $stderr, $stdout, $temp_dir);
+            $ret = my_shell_exec($command, $stdout, $stderr, $temp_dir);
             // Write the output of the PostGIS command to our data directory.
             // This should be a GeoJSON string which holds a bounding box of the
             // area affected by the updates (additions and removals).
