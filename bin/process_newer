@@ -34,7 +34,9 @@ try {
 
   include dirname(__FILE__)."/../config.php";
 
-  $lock_file = dirname(__FILE__)."/../data/process.pid";
+  $data_dir = realpath(dirname(__FILE__)."/../data");
+
+  $lock_file = $data_dir."/process.pid";
   if (file_exists($lock_file)) {
     $pid = trim(file_get_contents($lock_file));
     // If there is a pid file, then maybe a download is still running.
@@ -74,6 +76,11 @@ try {
   }
   if (empty($sort_limit) || !is_int($sort_limit)) {
     $sort_limit = 500 * 1024 * 1024;
+  }
+
+  $db_update_dir = $data_dir.'/db_updates';
+  if (!file_exists($db_update_dir)) {
+    mkdir($db_update_dir, 0775, true);
   }
 
   if (empty($curvature_path)) {
@@ -352,6 +359,10 @@ try {
 
             syslog(LOG_NOTICE, "Curvature Builder: Sending to PostGIS for $place ...");
             $ret = my_shell_exec($command, $stderr, $stdout, $temp_dir);
+            // Write the output of the PostGIS command to our data directory.
+            // This should be a GeoJSON string which holds a bounding box of the
+            // area affected by the updates (additions and removals).
+            file_put_contents($db_update_dir.'/postgis_updated--'.date('Y-m-dTH:i:s').'--'.str_replace('/', '-', $place).'.geojson', $stdout);
             if ($ret > 0) {
               throw new Exception("Error sending $place to PostGIS: \n$command_copy \n".$stderr."\n".$stdout);
             }
