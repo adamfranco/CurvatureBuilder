@@ -1,2 +1,3 @@
 last_downloaded
 *.pid
+db_updates/*
