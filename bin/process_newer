@@ -151,6 +151,8 @@ try {
             .' | '.$curvature_path."/curvature-pp add_segment_curvature"
             .' | '.$curvature_path."/curvature-pp filter_segment_deflections"
             .' | '.$curvature_path."/curvature-pp squash_curvature_for_tagged_ways --tag junction --values 'roundabout,circular'"
+            .' | '.$curvature_path."/curvature-pp squash_curvature_near_way_tag_change --tag junction --only-values 'roundabout,circular' --distance 30"
+            .' | '.$curvature_path."/curvature-pp squash_curvature_near_way_tag_change --tag oneway --ignored-values 'no' --distance 30"
             .' | '.$curvature_path."/curvature-pp split_collections_on_straight_segments --length 2414"
             .' | '.$curvature_path."/curvature-pp roll_up_length"
             .' | '.$curvature_path."/curvature-pp roll_up_curvature"
