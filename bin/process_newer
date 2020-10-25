@@ -150,11 +150,22 @@ try {
             .' | '.$curvature_path."/curvature-pp add_segment_length_and_radius"
             .' | '.$curvature_path."/curvature-pp add_segment_curvature"
             .' | '.$curvature_path."/curvature-pp filter_segment_deflections"
+            // Squash curvature for roundabouts and circulars and their lead-ins.
             .' | '.$curvature_path."/curvature-pp squash_curvature_for_tagged_ways --tag junction --values 'roundabout,circular'"
             .' | '.$curvature_path."/curvature-pp squash_curvature_near_way_tag_change --tag junction --only-values 'roundabout,circular' --distance 30"
+            // Squash curvature for phantom curves of "chained streets"
+            // (alternating one_way/two-way segments).
             .' | '.$curvature_path."/curvature-pp squash_curvature_near_way_tag_change --tag oneway --ignored-values 'no' --distance 30"
+            // Squash curvature near conflict areas.
             .' | '.$curvature_path."/curvature-pp squash_curvature_near_tagged_nodes --tag highway --values 'stop,give_way,traffic_signals,crossing,mini_roundabout,traffic_calming' --distance 30"
+            .' | '.$curvature_path."/curvature-pp squash_curvature_near_tagged_nodes --tag traffic_calming --distance 30"
+            .' | '.$curvature_path."/curvature-pp squash_curvature_for_tagged_ways --tag traffic_calming"
             .' | '.$curvature_path."/curvature-pp squash_curvature_near_tagged_nodes --tag barrier --distance 30"
+            // Squash curvature when there is parking along the street.
+            .' | '.$curvature_path."/curvature-pp squash_curvature_for_ways --match 'TagAndValueRegex(\"^parking:lane:(both|left|right)\", \"parallel|diagonal|perpendicular|marked\")'"
+            .' | '.$curvature_path."/curvature-pp squash_curvature_for_ways --match 'TagAndValueRegex(\"^parking:lane:(both|left|right):(parallel|diagonal|perpendicular)\", \"^(on_street|on_kerb|half_on_kerb|painted_area_only)$\")'"
+
+            // Continue with processing.
             .' | '.$curvature_path."/curvature-pp split_collections_on_straight_segments --length 2414"
             .' | '.$curvature_path."/curvature-pp roll_up_length"
             .' | '.$curvature_path."/curvature-pp roll_up_curvature"
