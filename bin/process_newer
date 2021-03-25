@@ -135,7 +135,7 @@ try {
 
           // Filter and process our data for the main curvature KML outputs.
           $ret = my_shell_exec('cat '.escapeshellarg($tmp_base.'-1.msgpack')
-            .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag surface --values 'unpaved,compacted,dirt,gravel,fine_gravel,sand,grass,ground,pebblestone,mud,clay,dirt/sand,soil'"
+            .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag surface --values 'unpaved,compacted,dirt,gravel,fine_gravel,sand,grass,ground,pebblestone,mud,clay,dirt/sand,soil,woodchips,gravels,logs,rocky,earthen,fine gravel,riverbed,ice,dust,compacted_gravel,earth,rock'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag service --values 'driveway,parking_aisle,drive-through,parking,bus,emergency_access,alley'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag area --values 'yes'"
             .' | '.$curvature_path."/curvature-pp filter_out_ways_with_tag --tag golf --values 'cartpath'"
