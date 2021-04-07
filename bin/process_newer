@@ -355,7 +355,7 @@ try {
               throw new Exception("No data found for $place . Sorted data is ".formatBytes($tmp_size).". Not syncing to postgis.");
             }
             $command = 'cat '.escapeshellarg($tmp_base.'-3.msgpack')
-              .' | '.$curvature_path."/curvature-output-postgis -s"
+              .' | '.$curvature_path."/curvature-output-postgis -s --progress-file /tmp/curvature-postgis-progress "
               ." --source ".escapeshellarg($source_key)
               ." --database ".escapeshellarg($postgis_database);
             if (!empty($postgis_host)) {
